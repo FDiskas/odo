@@ -8,5 +8,5 @@ ODO metter — Bun odo calculator for lease cars. How much you can drive this mo
 
 ## decisions/ ([Topic Index](decisions/INDEX.md))
 
-- [mileage-model](decisions/mileage-model.md) — Cumulative even-pace allowance with carry-over; monthly budget formula. tags: calculation, lease
+- [mileage-model](decisions/mileage-model.md) — Cumulative even-pace allowance; month remaining = allowance at month end − odometer. tags: calculation, lease
 - [stack](decisions/stack.md) — Bun.serve + vanilla TS + SVG charts, localStorage key odo:v1. tags: bun, charts, storage

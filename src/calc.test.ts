@@ -49,7 +49,30 @@ describe("summarize", () => {
     expect(s.dailyBudget).toBeCloseTo(3000 / 68);
     // 25..31 Oct = 7 days
     expect(s.daysLeftMonth).toBe(7);
-    expect(s.monthRemaining).toBeCloseTo((3000 / 68) * 7);
+  });
+
+  test("month remaining is the even-pace allowance at month end minus the odometer", () => {
+    const s = summarize(settings, [r("2026-10-01", 12010)], "2026-10-25");
+    // 1 Jan .. 31 Oct = 304 days
+    expect(s.monthBudget).toBeCloseTo((15000 * 31) / 365);
+    expect(s.monthRemaining).toBeCloseTo(10 + (15000 * 304) / 365 - 12010);
+  });
+
+  test("accumulated overuse leaves nothing for the month", () => {
+    const sep: Settings = { ...settings, leaseStart: "2026-09-18", startOdometer: 0 };
+    const s = summarize(sep, [r("2026-10-01", 705), r("2026-10-25", 2006)], "2026-10-25");
+    expect(s.drivenThisMonth).toBe(1301);
+    expect(s.monthBudget).toBeCloseTo((15000 * 31) / 365);
+    expect(s.paceDelta).toBeCloseTo((15000 * 37) / 365 - 2006);
+    expect(s.monthRemaining).toBe(0);
+    // The long-term pace that still fits the yearly limit.
+    expect(s.dailyBudget).toBeCloseTo(12994 / 328);
+  });
+
+  test("reserve carries into the month", () => {
+    const s = summarize(settings, [r("2026-10-25", 8010)], "2026-10-25");
+    expect(s.monthRemaining).toBeCloseTo(10 + (15000 * 304) / 365 - 8010);
+    expect(s.monthRemaining).toBeGreaterThan(s.monthBudget);
   });
 
   test("month driven uses interpolation from readings", () => {

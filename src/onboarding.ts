@@ -275,7 +275,10 @@ export function runOnboarding(initial: Settings): Promise<OnboardingResult> {
       <p class="ob-lead small">${
         sum.remainingYear < 0
           ? `Šių lizingo metų limitas jau viršytas ${km(-sum.remainingYear)}.`
-          : `≈ ${km(sum.dailyBudget)} per dieną, kad tilptumėte į ${km(s.annualLimit)} per metus.`
+          : sum.monthRemaining > 0
+            ? `≈ ${km(sum.monthRemaining / Math.max(sum.daysLeftMonth, 1))} per dieną iki mėnesio pabaigos.`
+            : `Tolygų grafiką viršijate ${km(-sum.paceDelta)}. Kad tilptumėte į ${km(s.annualLimit)} per metus,
+               toliau važiuokite ne daugiau ≈ ${km(sum.dailyBudget)} per dieną.`
       }</p>`;
     countUp($<HTMLElement>(".ob-big-num"), sum.monthRemaining, 0, 1200);
   }

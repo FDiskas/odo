@@ -146,7 +146,9 @@ export interface Summary {
   month: { start: number; end: number };
   daysLeftMonth: number;
   drivenThisMonth: number;
-  /** What can still be driven from today until the end of the calendar month. */
+  /** Planned km for this calendar month (the part inside the lease). */
+  monthBudget: number;
+  /** What can still be driven until the end of the calendar month without falling behind the even pace. */
   monthRemaining: number;
   paceAllowance: number;
   /** Positive = below the even-pace allowance (km in reserve). */
@@ -176,15 +178,16 @@ export function summarize(s: Settings, readings: Reading[], todayIso = todayISO(
   const dailyBudget = daysLeftYear > 0 ? Math.max(remainingYear, 0) / daysLeftYear : 0;
 
   const month = monthBounds(from);
+  const monthFrom = Math.max(month.start, leaseStart);
   const daysLeftMonth = Math.max(month.end - from, 0);
-  let monthRemaining = dailyBudget * Math.min(daysLeftMonth, daysLeftYear);
-  if (month.end > year.end && year.index + 1 < s.termYears) {
-    // The month spills into the next lease year, which brings fresh allowance.
-    const next = leaseYear(s, year.index + 1);
-    monthRemaining += (s.annualLimit * (month.end - year.end)) / next.days;
-  }
+  // Even-pace allowance up to the end of the month, so accumulated overuse (or
+  // reserve) counts against this month. allowanceAt also covers a month that
+  // spills into the next lease year.
+  const monthEndAllowance = allowanceAt(s, month.end);
+  const monthBudget = monthEndAllowance - allowanceAt(s, monthFrom);
+  const monthRemaining = monthEndAllowance - currentOdo;
 
-  const monthStartOdo = odometerAt(pts, Math.max(month.start, leaseStart));
+  const monthStartOdo = odometerAt(pts, monthFrom);
   const drivenThisMonth = monthStartOdo === null ? 0 : currentOdo - monthStartOdo;
   const yearStartOdo = odometerAt(pts, year.start);
   const drivenThisYear = yearStartOdo === null ? 0 : Math.max(currentOdo - yearStartOdo, 0);
@@ -227,6 +230,7 @@ export function summarize(s: Settings, readings: Reading[], todayIso = todayISO(
     month,
     daysLeftMonth,
     drivenThisMonth,
+    monthBudget,
     monthRemaining: Math.max(monthRemaining, 0),
     paceAllowance,
     paceDelta,

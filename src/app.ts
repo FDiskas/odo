@@ -126,24 +126,28 @@ function renderHero(sum: Summary | null) {
   const { m } = parts(sum.today);
   const monthEndDay = sum.month.end - 1;
   const used = Math.max(sum.drivenThisMonth, 0);
-  const total = used + sum.monthRemaining;
+  const total = sum.monthBudget;
   const pct = total > 0 ? Math.min(used / total, 1) : 1;
   const C = 2 * Math.PI * 62;
   const stale = sum.lastReadingDay < sum.today;
-  const exceeded = sum.remainingYear < 0;
+  const daysLeft = `iki ${fmtShortDate(monthEndDay)} liko <strong>${sum.daysLeftMonth} ${dayWord(sum.daysLeftMonth)}</strong>`;
+
+  let sub: string;
+  if (sum.remainingYear < 0) {
+    sub = `<strong class="delta-bad">Šių lizingo metų limitas jau viršytas ${km(-sum.remainingYear)}.</strong>`;
+  } else if (sum.monthRemaining > 0) {
+    sub = `≈ <strong>${km(sum.monthRemaining / Math.max(sum.daysLeftMonth, 1))}</strong> per dieną · ${daysLeft}`;
+  } else {
+    sub = `<strong class="delta-bad">Tolygų grafiką viršijate ${km(-sum.paceDelta)}.</strong>
+           Kad tilptumėte į ${km(state.settings.annualLimit)} per metus, toliau važiuokite ne daugiau
+           ≈ <strong>${km(sum.dailyBudget)}</strong> per dieną.`;
+  }
 
   hero.innerHTML = `
     <div>
       <p class="hero-label">Šį mėnesį (${MONTH_ACC[m]}) dar galite nuvažiuoti</p>
       <p class="hero-value"><span class="hero-num">${num(sum.monthRemaining)}</span><span class="unit">km</span></p>
-      <p class="hero-sub">
-        ${
-          exceeded
-            ? `<strong class="delta-bad">Šių lizingo metų limitas jau viršytas ${km(-sum.remainingYear)}.</strong>`
-            : `≈ <strong>${km(sum.dailyBudget)}</strong> per dieną · iki ${fmtShortDate(monthEndDay)} liko
-               <strong>${sum.daysLeftMonth} ${dayWord(sum.daysLeftMonth)}</strong>`
-        }
-      </p>
+      <p class="hero-sub">${sub}</p>
       ${
         stale
           ? `<p class="muted small stale-note">Paskutinis rodmuo — ${fmtDate(sum.lastReadingDay)}.
