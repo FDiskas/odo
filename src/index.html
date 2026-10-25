@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="lt">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ODO — lizingo ridos skaičiuoklė</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./onboarding.css" />
+    <script>
+      // Apply the saved theme and hide the dashboard for first-time visitors
+      // before first paint, so neither flashes.
+      (() => {
+        const html = document.documentElement;
+        let saved = {};
+        try {
+          saved = JSON.parse(localStorage.getItem("odo:v1") || "{}") || {};
+        } catch {}
+        if (saved.theme === "light" || saved.theme === "dark") html.dataset.theme = saved.theme;
+        if (!saved.settings || !saved.settings.leaseStart) html.classList.add("needs-onboarding");
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">ODO</span>
+        <div>
+          <h1>Lizingo ridos skaičiuoklė</h1>
+          <p class="muted" id="subtitle">Kiek galite nuvažiuoti šį mėnesį neviršydami metinio limito</p>
+        </div>
+      </div>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Perjungti temą" title="Perjungti temą"></button>
+    </header>
+
+    <main class="grid" id="main-grid">
+      <section class="card hero" id="hero" aria-live="polite"></section>
+
+      <section class="card status-card" id="status"></section>
+
+      <section class="tiles" id="tiles" aria-label="Pagrindiniai rodikliai"></section>
+
+      <section class="card reading-card">
+        <h2>Atnaujinti ridą</h2>
+        <p class="muted small">Įveskite dabartinį odometro rodmenį — skaičiavimas atsinaujins iškart.</p>
+        <form id="reading-form" class="form-row" autocomplete="off">
+          <label>
+            <span>Data</span>
+            <input type="date" name="date" required />
+          </label>
+          <label>
+            <span>Rida, km</span>
+            <input type="number" name="odometer" inputmode="numeric" min="0" step="1" required placeholder="pvz. 23 450" />
+          </label>
+          <button class="btn primary" type="submit">Išsaugoti</button>
+        </form>
+        <p class="form-error" id="reading-error" role="alert"></p>
+      </section>
+
+      <section class="card chart-card wide">
+        <div class="card-head">
+          <div>
+            <h2>Rida per lizingo metus</h2>
+            <p class="muted small">Faktinė rida lyginant su leistinu tolygiu tempu</p>
+          </div>
+          <div class="segmented" id="year-tabs" role="tablist" aria-label="Lizingo metai"></div>
+        </div>
+        <div class="legend" id="line-legend"></div>
+        <div class="chart" id="line-chart"></div>
+      </section>
+
+      <section class="card chart-card wide">
+        <div class="card-head">
+          <div>
+            <h2>Rida pagal mėnesius</h2>
+            <p class="muted small">Planas (tolygiai paskirstytas limitas) ir faktas</p>
+          </div>
+        </div>
+        <div class="legend" id="bar-legend"></div>
+        <div class="chart" id="bar-chart"></div>
+      </section>
+
+      <section class="card history-card">
+        <h2>Ridos istorija</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Data</th><th class="num">Rida</th><th class="num">Pokytis</th><th><span class="sr-only">Veiksmai</span></th></tr>
+            </thead>
+            <tbody id="history"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card settings-card" id="settings-card">
+        <h2>Lizingo nustatymai</h2>
+        <p class="muted small">Nustatymai ir ridos istorija saugomi tik jūsų naršyklėje.</p>
+        <form id="settings-form" class="settings-form" autocomplete="off">
+          <label>
+            <span>Metinis limitas, km</span>
+            <input type="number" name="annualLimit" min="1" step="500" required />
+          </label>
+          <label>
+            <span>Lizingo pradžia</span>
+            <input type="date" name="leaseStart" required />
+          </label>
+          <label>
+            <span>Rida lizingo pradžioje, km</span>
+            <input type="number" name="startOdometer" min="0" step="1" required />
+          </label>
+          <label>
+            <span>Lizingo trukmė, metai</span>
+            <input type="number" name="termYears" min="1" max="10" step="1" required />
+          </label>
+        </form>
+        <div class="settings-actions">
+          <span class="saved muted small" id="saved-indicator"></span>
+          <button class="btn ghost danger" type="button" id="reset">Ištrinti visus duomenis</button>
+        </div>
+      </section>
+    </main>
+
+    <div class="tooltip" id="tooltip" role="status" hidden></div>
+    <script type="module" src="./app.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/debian
+{
+    "name": "car-check",
+    "image": "mcr.microsoft.com/devcontainers/base:debian",
+    "features": {
+        "ghcr.io/shyim/devcontainers-features/bun:0": {}
+    },
+    "postCreateCommand": "sudo apt-get update && sudo apt-get install -y --no-install-recommends chromium && bun install",
+    "remoteEnv": {
+        "PUPPETEER_SKIP_DOWNLOAD": "true",
+        "PUPPETEER_EXECUTABLE_PATH": "/usr/bin/chromium"
+    }
+    // Use 'forwardPorts' to make a list of ports inside the container available locally.
+    // "forwardPorts": [],
+    // Configure tool-specific properties.
+    // "customizations": {},
+    // "remoteUser": "root"
+}
